@@ -9,8 +9,16 @@ set -ouex pipefail
 # List of rpmfusion packages can be found here:
 # https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/39/x86_64/repoview/index.html&protocol=https&redirect=1
 
+# Add Docker repository
+dnf5 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+
 # Core packages for Stratos Linux
-dnf5 install -y tmux docker-ce libldm
+# Note: Installing packages separately to handle potential failures gracefully
+dnf5 install -y tmux
+dnf5 install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Try to install libldm, skip if not available
+dnf5 install -y libldm || echo "libldm package not found in repositories"
 
 # Enable COPR repositories
 dnf5 -y copr enable ublue-os/staging
@@ -20,6 +28,11 @@ dnf5 -y copr enable ublue-os/staging
 # Enable container services
 systemctl enable podman.socket
 systemctl enable docker
+systemctl enable containerd
+
+# Configure docker for user access
+groupadd -f docker
+# Note: Users will need to be added to docker group manually after installation
 
 #### Stratos Linux Branding Configuration
 
