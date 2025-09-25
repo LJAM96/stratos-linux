@@ -23,14 +23,16 @@ dnf5 install -y libldm || echo "libldm package not found in repositories"
 # Install GNOME Extensions management tools
 dnf5 install -y gnome-extensions-app gnome-tweaks
 
-# Install specific GNOME extensions
+# Install specific GNOME extensions (available in Fedora repos)
 dnf5 install -y gnome-shell-extension-user-theme
 dnf5 install -y gnome-shell-extension-dash-to-dock
-dnf5 install -y gnome-shell-extension-arcmenu
-dnf5 install -y gnome-shell-extension-just-perfection
-dnf5 install -y gnome-shell-extension-blur-my-shell
-dnf5 install -y gnome-shell-extension-tiling-assistant
-dnf5 install -y gnome-shell-extension-desktop-icons-ng
+
+# Extensions not available in Fedora repos - will be downloaded from extensions.gnome.org
+# - ArcMenu
+# - Just Perfection
+# - Blur My Shell
+# - Tiling Assistant
+# - Desktop Icons NG (DING)
 
 # Install extensions from GNOME Extensions website
 # Create extension installation script
@@ -79,6 +81,21 @@ chmod +x /usr/local/bin/install-gnome-extension.sh
 dnf5 install -y python3
 
 # Install extensions from GNOME Extensions website
+# ArcMenu - Extension ID: 3628
+/usr/local/bin/install-gnome-extension.sh 3628 || echo "Failed to install ArcMenu"
+
+# Just Perfection - Extension ID: 3843
+/usr/local/bin/install-gnome-extension.sh 3843 || echo "Failed to install Just Perfection"
+
+# Blur My Shell - Extension ID: 3193
+/usr/local/bin/install-gnome-extension.sh 3193 || echo "Failed to install Blur My Shell"
+
+# Tiling Assistant - Extension ID: 3733
+/usr/local/bin/install-gnome-extension.sh 3733 || echo "Failed to install Tiling Assistant"
+
+# Desktop Icons NG (DING) - Extension ID: 2087
+/usr/local/bin/install-gnome-extension.sh 2087 || echo "Failed to install Desktop Icons NG"
+
 # Tailscale QS - Extension ID: 4065
 /usr/local/bin/install-gnome-extension.sh 4065 || echo "Failed to install Tailscale QS"
 
