@@ -142,15 +142,15 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Push To GHCR
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         id: push
         env:
-          REGISTRY_USER: ${{ github.actor }}
-          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.repository_owner }}
+          REGISTRY_PASSWORD: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
           image: ${{ env.IMAGE_NAME }}
