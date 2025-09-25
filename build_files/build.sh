@@ -35,8 +35,7 @@ dnf5 install -y gnome-shell-extension-dash-to-dock
 # - Desktop Icons NG (DING)
 
 # Install extensions from GNOME Extensions website
-# Create extension installation script (create directory if needed)
-test -d /usr/local/bin || mkdir -p /usr/local/bin
+# Create extension installation script
 cat > /usr/local/bin/install-gnome-extension.sh << 'EOF'
 #!/bin/bash
 # Script to install GNOME extensions from extensions.gnome.org
