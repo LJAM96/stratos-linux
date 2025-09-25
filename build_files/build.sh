@@ -66,12 +66,19 @@ Welcome to Stratos Linux \r (\l)
 EOF
 
 # Create motd
-cat > /etc/motd << EOF
+cat > /etc/motd << 'EOF'
 
-            ..'''' `````|````` |`````````,       .'.       `````|`````  .~      ~.              ..'''' 
-         .''            |      |'''|'''''      .''```.          |      |          |          .''       
-      ..'               |      |    `.       .'       `.        |      |          |       ..'          
-....''                  |      |      `.   .'           `.      |       `.______.'  ....''             
-                                                                                                       
-                                             LINUX
+  ███████ ████████ ██████   █████  ████████  ██████  ███████
+  ██         ██    ██   ██ ██   ██    ██    ██    ██ ██
+  ███████    ██    ██████  ███████    ██    ██    ██ ███████
+       ██    ██    ██   ██ ██   ██    ██    ██    ██      ██
+  ███████    ██    ██   ██ ██   ██    ██     ██████  ███████
+
+                           LINUX
+
+ Welcome to Stratos Linux - Development Ready Container Platform
+
+ Documentation: https://github.com/ljam96/stratos-linux
+ Issues: https://github.com/ljam96/stratos-linux/issues
+
 EOF
