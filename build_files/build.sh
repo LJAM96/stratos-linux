@@ -9,8 +9,8 @@ set -ouex pipefail
 # List of rpmfusion packages can be found here:
 # https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/39/x86_64/repoview/index.html&protocol=https&redirect=1
 
-# Add Docker repository
-dnf5 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+# Add Docker repository (dnf5 method)
+curl -fsSL https://download.docker.com/linux/fedora/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo
 
 # Core packages for Stratos Linux
 # Note: Installing packages separately to handle potential failures gracefully
