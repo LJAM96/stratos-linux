@@ -20,6 +20,74 @@ dnf5 install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 # Try to install libldm, skip if not available
 dnf5 install -y libldm || echo "libldm package not found in repositories"
 
+# Install GNOME Extensions management tools
+dnf5 install -y gnome-extensions-app gnome-tweaks
+
+# Install specific GNOME extensions
+dnf5 install -y gnome-shell-extension-user-theme
+dnf5 install -y gnome-shell-extension-dash-to-dock
+dnf5 install -y gnome-shell-extension-arcmenu
+dnf5 install -y gnome-shell-extension-just-perfection
+dnf5 install -y gnome-shell-extension-blur-my-shell
+dnf5 install -y gnome-shell-extension-tiling-assistant
+dnf5 install -y gnome-shell-extension-desktop-icons-ng
+
+# Install extensions from GNOME Extensions website
+# Create extension installation script
+cat > /usr/local/bin/install-gnome-extension.sh << 'EOF'
+#!/bin/bash
+# Script to install GNOME extensions from extensions.gnome.org
+
+EXTENSION_ID=$1
+if [ -z "$EXTENSION_ID" ]; then
+    echo "Usage: $0 <extension-id>"
+    exit 1
+fi
+
+# Get GNOME Shell version
+GNOME_VERSION=$(gnome-shell --version | cut -d' ' -f3 | cut -d'.' -f1,2)
+
+# Download extension info
+EXTENSION_INFO=$(curl -s "https://extensions.gnome.org/extension-info/?pk=${EXTENSION_ID}")
+DOWNLOAD_URL=$(echo $EXTENSION_INFO | python3 -c "import sys, json; data=json.load(sys.stdin); print('https://extensions.gnome.org' + data['download_url'])")
+
+if [ "$DOWNLOAD_URL" = "https://extensions.gnome.org" ]; then
+    echo "Failed to get download URL for extension $EXTENSION_ID"
+    exit 1
+fi
+
+# Create extensions directory
+mkdir -p /usr/share/gnome-shell/extensions
+
+# Download and install extension
+TEMP_FILE=$(mktemp)
+curl -s -o "$TEMP_FILE" "$DOWNLOAD_URL"
+
+# Extract extension UUID from the zip
+EXTENSION_UUID=$(unzip -qql "$TEMP_FILE" | head -n1 | tr -s ' ' | cut -d' ' -f5- | cut -d'/' -f1)
+
+# Extract extension to system directory
+unzip -q "$TEMP_FILE" -d "/usr/share/gnome-shell/extensions/"
+
+rm "$TEMP_FILE"
+echo "Installed extension: $EXTENSION_UUID"
+EOF
+
+chmod +x /usr/local/bin/install-gnome-extension.sh
+
+# Install Python3 for JSON parsing
+dnf5 install -y python3
+
+# Install extensions from GNOME Extensions website
+# Tailscale QS - Extension ID: 4065
+/usr/local/bin/install-gnome-extension.sh 4065 || echo "Failed to install Tailscale QS"
+
+# Daily Bing Wallpaper - Extension ID: 1262
+/usr/local/bin/install-gnome-extension.sh 1262 || echo "Failed to install Daily Bing Wallpaper"
+
+# Burn My Windows - Extension ID: 4679
+/usr/local/bin/install-gnome-extension.sh 4679 || echo "Failed to install Burn My Windows"
+
 # Enable additional repositories
 
 # Enable RPMFusion repositories (free and non-free)
