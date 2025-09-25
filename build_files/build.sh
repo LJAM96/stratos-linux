@@ -20,6 +20,12 @@ dnf5 install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 # Try to install libldm, skip if not available
 dnf5 install -y libldm || echo "libldm package not found in repositories"
 
+# Enable additional repositories
+
+# Enable RPMFusion repositories (free and non-free)
+dnf5 install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+dnf5 install -y https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+
 # Enable COPR repositories
 dnf5 -y copr enable ublue-os/staging
 
