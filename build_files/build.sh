@@ -152,11 +152,17 @@ echo "Fluent icon theme installed and set as default"
 # Install Flatpak (should already be available in Fedora)
 dnf5 install -y flatpak
 
-# Add Flathub repository
+# Add Flathub repository - this configures the repository for the image
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# System-wide Flatpaks (productivity, utilities, and core applications)
-echo "Installing system-wide Flatpaks..."
+# Create comprehensive Flatpak installation scripts for users
+# This approach is better for immutable systems where users install apps as needed
+
+# Create system-wide Flatpak installation script
+cat > /usr/bin/install-system-flatpaks.sh << 'EOF'
+#!/bin/bash
+# System-wide Flatpaks Installation Script
+echo "Installing system-wide Flatpaks (productivity, utilities, and core applications)..."
 
 # Productivity and Office
 flatpak install -y --system flathub org.onlyoffice.desktopeditors
@@ -226,10 +232,12 @@ flatpak install -y --system flathub io.github.giantpinkrobots.varia
 flatpak install -y --system flathub io.github.nokse22.Exhibit
 flatpak install -y --system flathub io.github.shiftey.Desktop
 
-# Gaming and Emulation (user-level for better game library management)
-echo "Setting up user-level gaming Flatpaks (will be available for users to enable)..."
+echo "System-wide Flatpaks installation completed!"
+EOF
 
-# Create a script for users to install gaming Flatpaks
+chmod +x /usr/bin/install-system-flatpaks.sh
+
+# Create gaming Flatpak installation script
 cat > /usr/bin/install-gaming-flatpaks.sh << 'EOF'
 #!/bin/bash
 # Gaming Flatpaks - User Installation Script
@@ -278,8 +286,33 @@ EOF
 
 chmod +x /usr/bin/install-gaming-flatpaks.sh
 
-echo "Flatpak installation completed!"
-echo "Gaming Flatpaks can be installed by running: install-gaming-flatpaks.sh"
+# Create a combined installation script
+cat > /usr/bin/install-all-flatpaks.sh << 'EOF'
+#!/bin/bash
+# Install all Stratos Linux Flatpaks
+echo "Installing all Stratos Linux Flatpaks..."
+echo "This will install system-wide and user-level applications."
+echo ""
+
+echo "Installing system applications..."
+/usr/bin/install-system-flatpaks.sh
+
+echo ""
+echo "Installing gaming applications..."
+/usr/bin/install-gaming-flatpaks.sh
+
+echo ""
+echo "All Flatpak installations completed!"
+echo "Applications are now available in your application menu."
+EOF
+
+chmod +x /usr/bin/install-all-flatpaks.sh
+
+echo "Flatpak configuration completed!"
+echo "Users can install applications using:"
+echo "  install-system-flatpaks.sh   - Productivity and system tools"
+echo "  install-gaming-flatpaks.sh   - Gaming and emulation"
+echo "  install-all-flatpaks.sh      - All applications"
 
 # Enable additional repositories
 
