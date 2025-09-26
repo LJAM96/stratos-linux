@@ -205,6 +205,44 @@ rm -rf /tmp/libfprint-CS9711
 
 echo "Custom libfprint with CS9711 support installed"
 
+# Configure fingerprint authentication
+echo "Configuring fingerprint authentication..."
+
+# Install fprintd for fingerprint daemon
+dnf5 install -y fprintd pam_fprintd authselect
+
+# Enable fingerprint feature in authselect
+authselect enable-feature with-fingerprint
+authselect apply-changes
+
+# Configure polkit for fingerprint authentication
+cat > /etc/pam.d/polkit-1 << 'EOF'
+#%PAM-1.0
+auth       required     pam_env.so
+auth       sufficient   pam_fprintd.so
+auth       include      system-auth
+account    include      system-auth
+password   include      system-auth
+session    include      system-auth
+EOF
+
+# Configure GDM for fingerprint authentication
+cat > /etc/pam.d/gdm-password << 'EOF'
+#%PAM-1.0
+auth       required     pam_env.so
+auth       sufficient   pam_fprintd.so
+auth       include      password-auth
+account    include      password-auth
+password   include      password-auth
+session    include      password-auth
+EOF
+
+# Enable fprintd service
+systemctl enable fprintd
+
+echo "Fingerprint authentication configured"
+echo "Users can enroll fingerprints with: fprintd-enroll"
+
 # Enable additional repositories
 
 # Enable RPMFusion repositories (free and non-free)
