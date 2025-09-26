@@ -36,8 +36,7 @@ dnf5 install -y gnome-shell-extension-dash-to-dock
 
 # Install extensions from GNOME Extensions website
 # Create extension installation script
-mkdir -p /usr/local/bin
-cat > /usr/local/bin/install-gnome-extension.sh << 'EOF'
+cat > /usr/bin/install-gnome-extension.sh << 'EOF'
 #!/bin/bash
 # Script to install GNOME extensions from extensions.gnome.org
 
@@ -76,35 +75,35 @@ rm "$TEMP_FILE"
 echo "Installed extension: $EXTENSION_UUID"
 EOF
 
-chmod +x /usr/local/bin/install-gnome-extension.sh
+chmod +x /usr/bin/install-gnome-extension.sh
 
 # Install Python3 for JSON parsing
 dnf5 install -y python3
 
 # Install extensions from GNOME Extensions website
 # ArcMenu - Extension ID: 3628
-/usr/local/bin/install-gnome-extension.sh 3628 || echo "Failed to install ArcMenu"
+/usr/bin/install-gnome-extension.sh 3628 || echo "Failed to install ArcMenu"
 
 # Just Perfection - Extension ID: 3843
-/usr/local/bin/install-gnome-extension.sh 3843 || echo "Failed to install Just Perfection"
+/usr/bin/install-gnome-extension.sh 3843 || echo "Failed to install Just Perfection"
 
 # Blur My Shell - Extension ID: 3193
-/usr/local/bin/install-gnome-extension.sh 3193 || echo "Failed to install Blur My Shell"
+/usr/bin/install-gnome-extension.sh 3193 || echo "Failed to install Blur My Shell"
 
 # Tiling Assistant - Extension ID: 3733
-/usr/local/bin/install-gnome-extension.sh 3733 || echo "Failed to install Tiling Assistant"
+/usr/bin/install-gnome-extension.sh 3733 || echo "Failed to install Tiling Assistant"
 
 # Desktop Icons NG (DING) - Extension ID: 2087
-/usr/local/bin/install-gnome-extension.sh 2087 || echo "Failed to install Desktop Icons NG"
+/usr/bin/install-gnome-extension.sh 2087 || echo "Failed to install Desktop Icons NG"
 
 # Tailscale QS - Extension ID: 4065
-/usr/local/bin/install-gnome-extension.sh 4065 || echo "Failed to install Tailscale QS"
+/usr/bin/install-gnome-extension.sh 4065 || echo "Failed to install Tailscale QS"
 
 # Daily Bing Wallpaper - Extension ID: 1262
-/usr/local/bin/install-gnome-extension.sh 1262 || echo "Failed to install Daily Bing Wallpaper"
+/usr/bin/install-gnome-extension.sh 1262 || echo "Failed to install Daily Bing Wallpaper"
 
 # Burn My Windows - Extension ID: 4679
-/usr/local/bin/install-gnome-extension.sh 4679 || echo "Failed to install Burn My Windows"
+/usr/bin/install-gnome-extension.sh 4679 || echo "Failed to install Burn My Windows"
 
 #### Icon Theme Configuration
 
