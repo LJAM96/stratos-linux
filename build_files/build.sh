@@ -155,60 +155,55 @@ dnf5 install -y flatpak
 # Add Flathub repository
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-echo "Installing essential Flatpaks during build process..."
+echo "Installing core Flatpaks during build process..."
 
-# Essential productivity applications (install during build)
-flatpak install -y --system --noninteractive flathub org.mozilla.Thunderbird || echo "Failed to install Thunderbird"
-flatpak install -y --system --noninteractive flathub com.bitwarden.desktop || echo "Failed to install Bitwarden"
+# Install only the most essential applications to avoid build timeouts
+# Essential productivity applications
 flatpak install -y --system --noninteractive flathub org.videolan.VLC || echo "Failed to install VLC"
 flatpak install -y --system --noninteractive flathub com.mattjakeman.ExtensionManager || echo "Failed to install Extension Manager"
-flatpak install -y --system --noninteractive flathub it.mijorus.gearlever || echo "Failed to install Gear Lever"
 flatpak install -y --system --noninteractive flathub io.gitlab.librewolf-community || echo "Failed to install LibreWolf"
 
-# Gaming platforms (install during build)
+# Gaming platforms
 flatpak install -y --system --noninteractive flathub com.valvesoftware.Steam || echo "Failed to install Steam"
-flatpak install -y --system --noninteractive flathub com.heroicgameslauncher.hgl || echo "Failed to install Heroic Games Launcher"
 flatpak install -y --system --noninteractive flathub net.lutris.Lutris || echo "Failed to install Lutris"
-flatpak install -y --system --noninteractive flathub com.usebottles.bottles || echo "Failed to install Bottles"
 
-# Development and system tools
-flatpak install -y --system --noninteractive flathub com.github.marhkb.Pods || echo "Failed to install Pods"
+# System tools
 flatpak install -y --system --noninteractive flathub net.nokyan.Resources || echo "Failed to install Resources"
-flatpak install -y --system --noninteractive flathub org.cryptomator.Cryptomator || echo "Failed to install Cryptomator"
-
-# Media applications
-flatpak install -y --system --noninteractive flathub com.obsproject.Studio || echo "Failed to install OBS Studio"
-flatpak install -y --system --noninteractive flathub com.github.rafostar.Clapper || echo "Failed to install Clapper"
-flatpak install -y --system --noninteractive flathub com.github.huluti.Curtail || echo "Failed to install Curtail"
-
-# Text editors and documentation
-flatpak install -y --system --noninteractive flathub com.github.marktext.marktext || echo "Failed to install MarkText"
-flatpak install -y --system --noninteractive flathub org.gnome.gitlab.somas.Apostrophe || echo "Failed to install Apostrophe"
-
-# Core GNOME applications that might not be included in base image
-flatpak install -y --system --noninteractive flathub org.gnome.Calculator || echo "Failed to install Calculator"
-flatpak install -y --system --noninteractive flathub org.gnome.Calendar || echo "Failed to install Calendar"
-flatpak install -y --system --noninteractive flathub org.gnome.Maps || echo "Failed to install Maps"
-flatpak install -y --system --noninteractive flathub org.gnome.Weather || echo "Failed to install Weather"
-flatpak install -y --system --noninteractive flathub org.gnome.Loupe || echo "Failed to install Loupe"
-flatpak install -y --system --noninteractive flathub org.gnome.TextEditor || echo "Failed to install Text Editor"
-
-# Essential emulators
-flatpak install -y --system --noninteractive flathub org.DolphinEmu.dolphin-emu || echo "Failed to install Dolphin"
-flatpak install -y --system --noninteractive flathub net.pcsx2.PCSX2 || echo "Failed to install PCSX2"
-
-# Utilities
-flatpak install -y --system --noninteractive flathub com.rafaelmardojai.Blanket || echo "Failed to install Blanket"
-flatpak install -y --system --noninteractive flathub com.saivert.pwvucontrol || echo "Failed to install PWVUControl"
 flatpak install -y --system --noninteractive flathub io.github.realmazharhussain.GdmSettings || echo "Failed to install GDM Settings"
 
-# Gaming tools and additional software
-flatpak install -y --system --noninteractive flathub com.github.Matoking.protontricks || echo "Failed to install ProtonTricks"
-flatpak install -y --system --noninteractive flathub net.davidotek.pupgui2 || echo "Failed to install ProtonUp-Qt"
-flatpak install -y --system --noninteractive flathub org.winehq.Wine || echo "Failed to install Wine"
-
 echo "Core Flatpak applications installed during build process"
-echo "Additional applications available through Flathub repository"
+echo "Additional applications can be installed using: flatpak install flathub <app-id>"
+
+#### Custom libfprint for CS9711 fingerprint sensor support
+
+echo "Installing custom libfprint with CS9711 support..."
+
+# Install build dependencies for libfprint
+dnf5 install -y git gcc meson ninja-build pkgconfig glib2-devel libusb1-devel nss-devel pixman-devel cairo-devel gdk-pixbuf2-devel libgudev-devel
+
+# Clone the custom libfprint repository with CS9711 support
+cd /tmp
+git clone https://github.com/ddlsmurf/libfprint-CS9711.git
+cd libfprint-CS9711
+
+# Build and install the custom libfprint
+meson setup builddir --prefix=/usr --libdir=/usr/lib64 --buildtype=release
+meson compile -C builddir
+meson install -C builddir
+
+# Create a backup of the original libfprint if it exists and replace it
+if [ -f /usr/lib64/libfprint-2.so.2 ]; then
+    mv /usr/lib64/libfprint-2.so.2 /usr/lib64/libfprint-2.so.2.backup
+fi
+
+# Update library cache
+ldconfig
+
+# Clean up build directory
+cd /
+rm -rf /tmp/libfprint-CS9711
+
+echo "Custom libfprint with CS9711 support installed"
 
 # Enable additional repositories
 
