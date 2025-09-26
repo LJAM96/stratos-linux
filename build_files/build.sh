@@ -36,6 +36,8 @@ dnf5 install -y gnome-shell-extension-dash-to-dock
 
 # Install extensions from GNOME Extensions website
 # Create extension installation script
+# Ensure /usr/local/bin directory exists
+mkdir -p /usr/local/bin
 cat > /usr/local/bin/install-gnome-extension.sh << 'EOF'
 #!/bin/bash
 # Script to install GNOME extensions from extensions.gnome.org
