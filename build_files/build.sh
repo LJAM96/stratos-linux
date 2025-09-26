@@ -20,6 +20,139 @@ dnf5 install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 # Try to install libldm, skip if not available
 dnf5 install -y libldm || echo "libldm package not found in repositories"
 
+# Install GNOME Extensions management tools
+dnf5 install -y gnome-extensions-app gnome-tweaks
+
+# Install specific GNOME extensions (available in Fedora repos)
+dnf5 install -y gnome-shell-extension-user-theme
+dnf5 install -y gnome-shell-extension-dash-to-dock
+
+# Extensions not available in Fedora repos - will be downloaded from extensions.gnome.org
+# - ArcMenu
+# - Just Perfection
+# - Blur My Shell
+# - Tiling Assistant
+# - Desktop Icons NG (DING)
+
+# Install extensions from GNOME Extensions website
+# Create extension installation script
+cat > /usr/local/bin/install-gnome-extension.sh << 'EOF'
+#!/bin/bash
+# Script to install GNOME extensions from extensions.gnome.org
+
+EXTENSION_ID=$1
+if [ -z "$EXTENSION_ID" ]; then
+    echo "Usage: $0 <extension-id>"
+    exit 1
+fi
+
+# Get GNOME Shell version
+GNOME_VERSION=$(gnome-shell --version | cut -d' ' -f3 | cut -d'.' -f1,2)
+
+# Download extension info
+EXTENSION_INFO=$(curl -s "https://extensions.gnome.org/extension-info/?pk=${EXTENSION_ID}")
+DOWNLOAD_URL=$(echo $EXTENSION_INFO | python3 -c "import sys, json; data=json.load(sys.stdin); print('https://extensions.gnome.org' + data['download_url'])")
+
+if [ "$DOWNLOAD_URL" = "https://extensions.gnome.org" ]; then
+    echo "Failed to get download URL for extension $EXTENSION_ID"
+    exit 1
+fi
+
+# Create extensions directory
+mkdir -p /usr/share/gnome-shell/extensions
+
+# Download and install extension
+TEMP_FILE=$(mktemp)
+curl -s -o "$TEMP_FILE" "$DOWNLOAD_URL"
+
+# Extract extension UUID from the zip
+EXTENSION_UUID=$(unzip -qql "$TEMP_FILE" | head -n1 | tr -s ' ' | cut -d' ' -f5- | cut -d'/' -f1)
+
+# Extract extension to system directory
+unzip -q "$TEMP_FILE" -d "/usr/share/gnome-shell/extensions/"
+
+rm "$TEMP_FILE"
+echo "Installed extension: $EXTENSION_UUID"
+EOF
+
+chmod +x /usr/local/bin/install-gnome-extension.sh
+
+# Install Python3 for JSON parsing
+dnf5 install -y python3
+
+# Install extensions from GNOME Extensions website
+# ArcMenu - Extension ID: 3628
+/usr/local/bin/install-gnome-extension.sh 3628 || echo "Failed to install ArcMenu"
+
+# Just Perfection - Extension ID: 3843
+/usr/local/bin/install-gnome-extension.sh 3843 || echo "Failed to install Just Perfection"
+
+# Blur My Shell - Extension ID: 3193
+/usr/local/bin/install-gnome-extension.sh 3193 || echo "Failed to install Blur My Shell"
+
+# Tiling Assistant - Extension ID: 3733
+/usr/local/bin/install-gnome-extension.sh 3733 || echo "Failed to install Tiling Assistant"
+
+# Desktop Icons NG (DING) - Extension ID: 2087
+/usr/local/bin/install-gnome-extension.sh 2087 || echo "Failed to install Desktop Icons NG"
+
+# Tailscale QS - Extension ID: 4065
+/usr/local/bin/install-gnome-extension.sh 4065 || echo "Failed to install Tailscale QS"
+
+# Daily Bing Wallpaper - Extension ID: 1262
+/usr/local/bin/install-gnome-extension.sh 1262 || echo "Failed to install Daily Bing Wallpaper"
+
+# Burn My Windows - Extension ID: 4679
+/usr/local/bin/install-gnome-extension.sh 4679 || echo "Failed to install Burn My Windows"
+
+#### Icon Theme Configuration
+
+# Install Fluent icon theme
+echo "Installing Fluent icon theme..."
+
+# Install required packages for icon theme installation
+dnf5 install -y git
+
+# Clone Fluent icon theme repository
+cd /tmp
+git clone https://github.com/vinceliuice/Fluent-icon-theme.git
+cd Fluent-icon-theme
+
+# Install the icon theme system-wide
+./install.sh -a
+
+# Set Fluent-dark as the default icon theme
+# Create a dconf profile for default settings
+mkdir -p /etc/dconf/profile
+cat > /etc/dconf/profile/user << 'EOF'
+user-db:user
+system-db:local
+EOF
+
+# Create system database directory
+mkdir -p /etc/dconf/db/local.d
+
+# Set default icon theme to Fluent-dark
+cat > /etc/dconf/db/local.d/01-icon-theme << 'EOF'
+[org/gnome/desktop/interface]
+icon-theme='Fluent-dark'
+EOF
+
+# Update dconf database
+dconf update
+
+# Clean up
+cd /
+rm -rf /tmp/Fluent-icon-theme
+
+echo "Fluent icon theme installed and set as default"
+
+# Enable additional repositories
+
+# Enable RPMFusion repositories (free and non-free)
+dnf5 install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+dnf5 install -y https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+
 # Enable COPR repositories
 dnf5 -y copr enable ublue-os/staging
 
