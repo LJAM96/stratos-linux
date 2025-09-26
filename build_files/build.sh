@@ -20,6 +20,27 @@ dnf5 install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 # Try to install libldm, skip if not available
 dnf5 install -y libldm || echo "libldm package not found in repositories"
 
+# Create libldm systemd service
+cat > /etc/systemd/system/libldm.service << 'EOF'
+[Unit]
+Description=Local Data Manager
+Before=local-fs-pre.target
+
+[Service]
+Type=forking
+User=root
+ExecStart=/usr/bin/ldmtool create all
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable the libldm service
+systemctl enable libldm.service
+
+echo "libldm service created and enabled"
+
 # Install GNOME Extensions management tools
 dnf5 install -y gnome-extensions-app gnome-tweaks
 
