@@ -152,167 +152,63 @@ echo "Fluent icon theme installed and set as default"
 # Install Flatpak (should already be available in Fedora)
 dnf5 install -y flatpak
 
-# Add Flathub repository - this configures the repository for the image
+# Add Flathub repository
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# Create comprehensive Flatpak installation scripts for users
-# This approach is better for immutable systems where users install apps as needed
+echo "Installing essential Flatpaks during build process..."
 
-# Create system-wide Flatpak installation script
-cat > /usr/bin/install-system-flatpaks.sh << 'EOF'
-#!/bin/bash
-# System-wide Flatpaks Installation Script
-echo "Installing system-wide Flatpaks (productivity, utilities, and core applications)..."
+# Essential productivity applications (install during build)
+flatpak install -y --system --noninteractive flathub org.mozilla.Thunderbird || echo "Failed to install Thunderbird"
+flatpak install -y --system --noninteractive flathub com.bitwarden.desktop || echo "Failed to install Bitwarden"
+flatpak install -y --system --noninteractive flathub org.videolan.VLC || echo "Failed to install VLC"
+flatpak install -y --system --noninteractive flathub com.mattjakeman.ExtensionManager || echo "Failed to install Extension Manager"
+flatpak install -y --system --noninteractive flathub it.mijorus.gearlever || echo "Failed to install Gear Lever"
+flatpak install -y --system --noninteractive flathub io.gitlab.librewolf-community || echo "Failed to install LibreWolf"
 
-# Productivity and Office
-flatpak install -y --system flathub org.onlyoffice.desktopeditors
-flatpak install -y --system flathub org.mozilla.Thunderbird
-flatpak install -y --system flathub com.bitwarden.desktop
-flatpak install -y --system flathub org.cryptomator.Cryptomator
+# Gaming platforms (install during build)
+flatpak install -y --system --noninteractive flathub com.valvesoftware.Steam || echo "Failed to install Steam"
+flatpak install -y --system --noninteractive flathub com.heroicgameslauncher.hgl || echo "Failed to install Heroic Games Launcher"
+flatpak install -y --system --noninteractive flathub net.lutris.Lutris || echo "Failed to install Lutris"
+flatpak install -y --system --noninteractive flathub com.usebottles.bottles || echo "Failed to install Bottles"
 
-# Development and System Tools
-flatpak install -y --system flathub com.mattjakeman.ExtensionManager
-flatpak install -y --system flathub com.github.marhkb.Pods
-flatpak install -y --system flathub it.mijorus.gearlever
-flatpak install -y --system flathub net.nokyan.Resources
-flatpak install -y --system flathub org.virt_manager.virt-manager
-flatpak install -y --system flathub com.termius.Termius
+# Development and system tools
+flatpak install -y --system --noninteractive flathub com.github.marhkb.Pods || echo "Failed to install Pods"
+flatpak install -y --system --noninteractive flathub net.nokyan.Resources || echo "Failed to install Resources"
+flatpak install -y --system --noninteractive flathub org.cryptomator.Cryptomator || echo "Failed to install Cryptomator"
 
-# Media and Graphics
-flatpak install -y --system flathub org.videolan.VLC
-flatpak install -y --system flathub com.obsproject.Studio
-flatpak install -y --system flathub com.github.rafostar.Clapper
-flatpak install -y --system flathub com.github.huluti.Curtail
-flatpak install -y --system flathub de.haeckerfelix.Fragments
+# Media applications
+flatpak install -y --system --noninteractive flathub com.obsproject.Studio || echo "Failed to install OBS Studio"
+flatpak install -y --system --noninteractive flathub com.github.rafostar.Clapper || echo "Failed to install Clapper"
+flatpak install -y --system --noninteractive flathub com.github.huluti.Curtail || echo "Failed to install Curtail"
 
-# Text Editors and Documentation
-flatpak install -y --system flathub com.github.marktext.marktext
-flatpak install -y --system flathub org.gnome.gitlab.somas.Apostrophe
-flatpak install -y --system flathub page.tesk.Refine
+# Text editors and documentation
+flatpak install -y --system --noninteractive flathub com.github.marktext.marktext || echo "Failed to install MarkText"
+flatpak install -y --system --noninteractive flathub org.gnome.gitlab.somas.Apostrophe || echo "Failed to install Apostrophe"
 
-# GNOME Applications
-flatpak install -y --system flathub org.gnome.Calculator
-flatpak install -y --system flathub org.gnome.Calendar
-flatpak install -y --system flathub org.gnome.Characters
-flatpak install -y --system flathub org.gnome.Connections
-flatpak install -y --system flathub org.gnome.Contacts
-flatpak install -y --system flathub org.gnome.DejaDup
-flatpak install -y --system flathub org.gnome.Firmware
-flatpak install -y --system flathub org.gnome.Fractal
-flatpak install -y --system flathub org.gnome.GHex
-flatpak install -y --system flathub org.gnome.Geary
-flatpak install -y --system flathub org.gnome.Logs
-flatpak install -y --system flathub org.gnome.Loupe
-flatpak install -y --system flathub org.gnome.Maps
-flatpak install -y --system flathub org.gnome.NautilusPreviewer
-flatpak install -y --system flathub org.gnome.Papers
-flatpak install -y --system flathub org.gnome.SimpleScan
-flatpak install -y --system flathub org.gnome.TextEditor
-flatpak install -y --system flathub org.gnome.Weather
-flatpak install -y --system flathub org.gnome.World.PikaBackup
-flatpak install -y --system flathub org.gnome.baobab
-flatpak install -y --system flathub org.gnome.clocks
-flatpak install -y --system flathub org.gnome.font-viewer
+# Core GNOME applications that might not be included in base image
+flatpak install -y --system --noninteractive flathub org.gnome.Calculator || echo "Failed to install Calculator"
+flatpak install -y --system --noninteractive flathub org.gnome.Calendar || echo "Failed to install Calendar"
+flatpak install -y --system --noninteractive flathub org.gnome.Maps || echo "Failed to install Maps"
+flatpak install -y --system --noninteractive flathub org.gnome.Weather || echo "Failed to install Weather"
+flatpak install -y --system --noninteractive flathub org.gnome.Loupe || echo "Failed to install Loupe"
+flatpak install -y --system --noninteractive flathub org.gnome.TextEditor || echo "Failed to install Text Editor"
 
-# Audio/Sound Tools
-flatpak install -y --system flathub com.rafaelmardojai.Blanket
-flatpak install -y --system flathub com.saivert.pwvucontrol
+# Essential emulators
+flatpak install -y --system --noninteractive flathub org.DolphinEmu.dolphin-emu || echo "Failed to install Dolphin"
+flatpak install -y --system --noninteractive flathub net.pcsx2.PCSX2 || echo "Failed to install PCSX2"
 
-# Utilities and Tools
-flatpak install -y --system flathub com.vixalien.sticky
-flatpak install -y --system flathub io.gitlab.adhami3310.Converter
-flatpak install -y --system flathub io.gitlab.librewolf-community
-flatpak install -y --system flathub io.kapsa.drive
-flatpak install -y --system flathub nl.g4d.Girens
-flatpak install -y --system flathub page.codeberg.libre_menu_editor.LibreMenuEditor
-flatpak install -y --system flathub so.libdb.dissent
-flatpak install -y --system flathub org.jdownloader.JDownloader
-flatpak install -y --system flathub io.github.realmazharhussain.GdmSettings
-flatpak install -y --system flathub io.github.giantpinkrobots.varia
-flatpak install -y --system flathub io.github.nokse22.Exhibit
-flatpak install -y --system flathub io.github.shiftey.Desktop
+# Utilities
+flatpak install -y --system --noninteractive flathub com.rafaelmardojai.Blanket || echo "Failed to install Blanket"
+flatpak install -y --system --noninteractive flathub com.saivert.pwvucontrol || echo "Failed to install PWVUControl"
+flatpak install -y --system --noninteractive flathub io.github.realmazharhussain.GdmSettings || echo "Failed to install GDM Settings"
 
-echo "System-wide Flatpaks installation completed!"
-EOF
+# Gaming tools and additional software
+flatpak install -y --system --noninteractive flathub com.github.Matoking.protontricks || echo "Failed to install ProtonTricks"
+flatpak install -y --system --noninteractive flathub net.davidotek.pupgui2 || echo "Failed to install ProtonUp-Qt"
+flatpak install -y --system --noninteractive flathub org.winehq.Wine || echo "Failed to install Wine"
 
-chmod +x /usr/bin/install-system-flatpaks.sh
-
-# Create gaming Flatpak installation script
-cat > /usr/bin/install-gaming-flatpaks.sh << 'EOF'
-#!/bin/bash
-# Gaming Flatpaks - User Installation Script
-echo "Installing gaming and emulation Flatpaks for current user..."
-
-# Gaming Platforms
-flatpak install -y --user flathub com.valvesoftware.Steam
-flatpak install -y --user flathub com.heroicgameslauncher.hgl
-flatpak install -y --user flathub net.lutris.Lutris
-flatpak install -y --user flathub com.usebottles.bottles
-flatpak install -y --user flathub org.winehq.Wine
-
-# Gaming Tools
-flatpak install -y --user flathub com.github.Matoking.protontricks
-flatpak install -y --user flathub com.vysp3r.ProtonPlus
-flatpak install -y --user flathub com.steamgriddb.SGDBoop
-flatpak install -y --user flathub com.steamgriddb.steam-rom-manager
-flatpak install -y --user flathub net.davidotek.pupgui2
-flatpak install -y --user flathub com.github.mtkennerly.ludusavi
-flatpak install -y --user flathub io.github.fastrizwaan.WineCharm
-flatpak install -y --user flathub io.github.fastrizwaan.WineZGUI
-
-# Emulators
-flatpak install -y --user flathub org.DolphinEmu.dolphin-emu
-flatpak install -y --user flathub net.pcsx2.PCSX2
-flatpak install -y --user flathub net.rpcs3.RPCS3
-flatpak install -y --user flathub org.duckstation.DuckStation
-flatpak install -y --user flathub io.github.ryubing.Ryujinx
-flatpak install -y --user flathub net.shadps4.shadPS4
-
-# Specialized Gaming Tools
-flatpak install -y --user flathub com.github.ADBeveridge.Raider
-flatpak install -y --user flathub com.github.sdv43.whaler
-flatpak install -y --user flathub io.github.ellie_commons.jorts
-flatpak install -y --user flathub io.github.zaedus.spider
-
-# Screen Recording and Streaming
-flatpak install -y --user flathub com.dec05eba.gpu_screen_recorder
-flatpak install -y --user flathub de.nicokimmel.shadowcast-electron
-flatpak install -y --user flathub dev.lizardbyte.app.Sunshine
-flatpak install -y --user flathub dev.fredol.open-tv
-
-echo "Gaming Flatpaks installation completed!"
-echo "You can now launch your gaming applications from the application menu."
-EOF
-
-chmod +x /usr/bin/install-gaming-flatpaks.sh
-
-# Create a combined installation script
-cat > /usr/bin/install-all-flatpaks.sh << 'EOF'
-#!/bin/bash
-# Install all Stratos Linux Flatpaks
-echo "Installing all Stratos Linux Flatpaks..."
-echo "This will install system-wide and user-level applications."
-echo ""
-
-echo "Installing system applications..."
-/usr/bin/install-system-flatpaks.sh
-
-echo ""
-echo "Installing gaming applications..."
-/usr/bin/install-gaming-flatpaks.sh
-
-echo ""
-echo "All Flatpak installations completed!"
-echo "Applications are now available in your application menu."
-EOF
-
-chmod +x /usr/bin/install-all-flatpaks.sh
-
-echo "Flatpak configuration completed!"
-echo "Users can install applications using:"
-echo "  install-system-flatpaks.sh   - Productivity and system tools"
-echo "  install-gaming-flatpaks.sh   - Gaming and emulation"
-echo "  install-all-flatpaks.sh      - All applications"
+echo "Core Flatpak applications installed during build process"
+echo "Additional applications available through Flathub repository"
 
 # Enable additional repositories
 
