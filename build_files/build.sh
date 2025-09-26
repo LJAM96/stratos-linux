@@ -147,6 +147,140 @@ rm -rf /tmp/Fluent-icon-theme
 
 echo "Fluent icon theme installed and set as default"
 
+#### Flatpak Configuration and Installation
+
+# Install Flatpak (should already be available in Fedora)
+dnf5 install -y flatpak
+
+# Add Flathub repository
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# System-wide Flatpaks (productivity, utilities, and core applications)
+echo "Installing system-wide Flatpaks..."
+
+# Productivity and Office
+flatpak install -y --system flathub org.onlyoffice.desktopeditors
+flatpak install -y --system flathub org.mozilla.Thunderbird
+flatpak install -y --system flathub com.bitwarden.desktop
+flatpak install -y --system flathub org.cryptomator.Cryptomator
+
+# Development and System Tools
+flatpak install -y --system flathub com.mattjakeman.ExtensionManager
+flatpak install -y --system flathub com.github.marhkb.Pods
+flatpak install -y --system flathub it.mijorus.gearlever
+flatpak install -y --system flathub net.nokyan.Resources
+flatpak install -y --system flathub org.virt_manager.virt-manager
+flatpak install -y --system flathub com.termius.Termius
+
+# Media and Graphics
+flatpak install -y --system flathub org.videolan.VLC
+flatpak install -y --system flathub com.obsproject.Studio
+flatpak install -y --system flathub com.github.rafostar.Clapper
+flatpak install -y --system flathub com.github.huluti.Curtail
+flatpak install -y --system flathub de.haeckerfelix.Fragments
+
+# Text Editors and Documentation
+flatpak install -y --system flathub com.github.marktext.marktext
+flatpak install -y --system flathub org.gnome.gitlab.somas.Apostrophe
+flatpak install -y --system flathub page.tesk.Refine
+
+# GNOME Applications
+flatpak install -y --system flathub org.gnome.Calculator
+flatpak install -y --system flathub org.gnome.Calendar
+flatpak install -y --system flathub org.gnome.Characters
+flatpak install -y --system flathub org.gnome.Connections
+flatpak install -y --system flathub org.gnome.Contacts
+flatpak install -y --system flathub org.gnome.DejaDup
+flatpak install -y --system flathub org.gnome.Firmware
+flatpak install -y --system flathub org.gnome.Fractal
+flatpak install -y --system flathub org.gnome.GHex
+flatpak install -y --system flathub org.gnome.Geary
+flatpak install -y --system flathub org.gnome.Logs
+flatpak install -y --system flathub org.gnome.Loupe
+flatpak install -y --system flathub org.gnome.Maps
+flatpak install -y --system flathub org.gnome.NautilusPreviewer
+flatpak install -y --system flathub org.gnome.Papers
+flatpak install -y --system flathub org.gnome.SimpleScan
+flatpak install -y --system flathub org.gnome.TextEditor
+flatpak install -y --system flathub org.gnome.Weather
+flatpak install -y --system flathub org.gnome.World.PikaBackup
+flatpak install -y --system flathub org.gnome.baobab
+flatpak install -y --system flathub org.gnome.clocks
+flatpak install -y --system flathub org.gnome.font-viewer
+
+# Audio/Sound Tools
+flatpak install -y --system flathub com.rafaelmardojai.Blanket
+flatpak install -y --system flathub com.saivert.pwvucontrol
+
+# Utilities and Tools
+flatpak install -y --system flathub com.vixalien.sticky
+flatpak install -y --system flathub io.gitlab.adhami3310.Converter
+flatpak install -y --system flathub io.gitlab.librewolf-community
+flatpak install -y --system flathub io.kapsa.drive
+flatpak install -y --system flathub nl.g4d.Girens
+flatpak install -y --system flathub page.codeberg.libre_menu_editor.LibreMenuEditor
+flatpak install -y --system flathub so.libdb.dissent
+flatpak install -y --system flathub org.jdownloader.JDownloader
+flatpak install -y --system flathub io.github.realmazharhussain.GdmSettings
+flatpak install -y --system flathub io.github.giantpinkrobots.varia
+flatpak install -y --system flathub io.github.nokse22.Exhibit
+flatpak install -y --system flathub io.github.shiftey.Desktop
+
+# Gaming and Emulation (user-level for better game library management)
+echo "Setting up user-level gaming Flatpaks (will be available for users to enable)..."
+
+# Create a script for users to install gaming Flatpaks
+cat > /usr/bin/install-gaming-flatpaks.sh << 'EOF'
+#!/bin/bash
+# Gaming Flatpaks - User Installation Script
+echo "Installing gaming and emulation Flatpaks for current user..."
+
+# Gaming Platforms
+flatpak install -y --user flathub com.valvesoftware.Steam
+flatpak install -y --user flathub com.heroicgameslauncher.hgl
+flatpak install -y --user flathub net.lutris.Lutris
+flatpak install -y --user flathub com.usebottles.bottles
+flatpak install -y --user flathub org.winehq.Wine
+
+# Gaming Tools
+flatpak install -y --user flathub com.github.Matoking.protontricks
+flatpak install -y --user flathub com.vysp3r.ProtonPlus
+flatpak install -y --user flathub com.steamgriddb.SGDBoop
+flatpak install -y --user flathub com.steamgriddb.steam-rom-manager
+flatpak install -y --user flathub net.davidotek.pupgui2
+flatpak install -y --user flathub com.github.mtkennerly.ludusavi
+flatpak install -y --user flathub io.github.fastrizwaan.WineCharm
+flatpak install -y --user flathub io.github.fastrizwaan.WineZGUI
+
+# Emulators
+flatpak install -y --user flathub org.DolphinEmu.dolphin-emu
+flatpak install -y --user flathub net.pcsx2.PCSX2
+flatpak install -y --user flathub net.rpcs3.RPCS3
+flatpak install -y --user flathub org.duckstation.DuckStation
+flatpak install -y --user flathub io.github.ryubing.Ryujinx
+flatpak install -y --user flathub net.shadps4.shadPS4
+
+# Specialized Gaming Tools
+flatpak install -y --user flathub com.github.ADBeveridge.Raider
+flatpak install -y --user flathub com.github.sdv43.whaler
+flatpak install -y --user flathub io.github.ellie_commons.jorts
+flatpak install -y --user flathub io.github.zaedus.spider
+
+# Screen Recording and Streaming
+flatpak install -y --user flathub com.dec05eba.gpu_screen_recorder
+flatpak install -y --user flathub de.nicokimmel.shadowcast-electron
+flatpak install -y --user flathub dev.lizardbyte.app.Sunshine
+flatpak install -y --user flathub dev.fredol.open-tv
+
+echo "Gaming Flatpaks installation completed!"
+echo "You can now launch your gaming applications from the application menu."
+EOF
+
+chmod +x /usr/bin/install-gaming-flatpaks.sh
+
+echo "Flatpak installation completed!"
+echo "Gaming Flatpaks can be installed by running: install-gaming-flatpaks.sh"
+
 # Enable additional repositories
 
 # Enable RPMFusion repositories (free and non-free)
