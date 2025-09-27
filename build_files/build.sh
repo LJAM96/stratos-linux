@@ -327,3 +327,85 @@ cat > /etc/motd << 'EOF'
  Issues: https://github.com/ljam96/stratos-linux/issues
 
 EOF
+
+#### Custom Boot Splash and Logo Integration
+
+echo "Installing custom Stratos logo and boot splash..."
+
+# Copy logo to system directories
+mkdir -p /usr/share/pixmaps
+mkdir -p /usr/share/stratos-linux
+
+# Install required packages for boot splash customization
+dnf5 install -y plymouth plymouth-themes
+
+# Create custom Plymouth theme directory
+mkdir -p /usr/share/plymouth/themes/stratos
+
+# Create a simple black boot splash theme with logo
+cat > /usr/share/plymouth/themes/stratos/stratos.plymouth << 'EOF'
+[Plymouth Theme]
+Name=Stratos Linux
+Description=Stratos Linux boot splash theme
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/stratos
+ScriptFile=/usr/share/plymouth/themes/stratos/stratos.script
+EOF
+
+# Create the Plymouth script for the boot splash
+cat > /usr/share/plymouth/themes/stratos/stratos.script << 'EOF'
+# Simple black boot splash with centered logo
+
+# Set screen to black
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+
+# Load and display logo
+logo.image = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+
+# Center the logo on screen
+logo.sprite.SetX((Window.GetWidth() - logo.image.GetWidth()) / 2);
+logo.sprite.SetY((Window.GetHeight() - logo.image.GetHeight()) / 2);
+
+# Simple progress indication (optional dots)
+for (i = 0; i < 3; i++) {
+    progress_dot[i].image = Image.Text("•", 1, 1, 1);
+    progress_dot[i].sprite = Sprite(progress_dot[i].image);
+    progress_dot[i].sprite.SetX(Window.GetWidth() / 2 - 30 + i * 20);
+    progress_dot[i].sprite.SetY(Window.GetHeight() / 2 + 100);
+}
+
+# Animate progress dots
+Plymouth.SetRefreshFunction(
+    fun () {
+        progress = Plymouth.GetBootProgress();
+        for (i = 0; i < 3; i++) {
+            if (progress > i * 0.33) {
+                progress_dot[i].sprite.SetOpacity(1);
+            } else {
+                progress_dot[i].sprite.SetOpacity(0.3);
+            }
+        }
+    }
+);
+EOF
+
+echo "Boot splash theme created"
+
+# Copy the Stratos logo to the Plymouth theme directory
+cp /ctx/branding/stratos.png /usr/share/plymouth/themes/stratos/logo.png
+
+# Copy logo to other system locations for general use
+cp /ctx/branding/stratos.png /usr/share/pixmaps/stratos-linux.png
+cp /ctx/branding/stratos.png /usr/share/stratos-linux/logo.png
+
+# Set the Plymouth theme as default
+plymouth-set-default-theme stratos
+
+# Rebuild initrd with new Plymouth theme
+dracut -f --regenerate-all
+
+echo "Stratos Linux logo and boot splash installed"
