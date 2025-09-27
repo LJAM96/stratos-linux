@@ -176,80 +176,35 @@ dnf5 install -y flatpak
 # Add Flathub repository
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-echo "Installing core Flatpaks during build process..."
+echo "Configuring Flatpak repository for user installations..."
 
-# Install only the most essential applications to avoid build timeouts
-# Essential productivity applications
-flatpak install -y --system --noninteractive flathub org.videolan.VLC || echo "Failed to install VLC"
-flatpak install -y --system --noninteractive flathub com.mattjakeman.ExtensionManager || echo "Failed to install Extension Manager"
-flatpak install -y --system --noninteractive flathub io.gitlab.librewolf-community || echo "Failed to install LibreWolf"
+# Only add the repository during build, let users install apps as needed
+echo "Flathub repository configured"
+echo "Users can install applications using: flatpak install flathub <app-id>"
+echo "Popular apps: VLC, Steam, Extension Manager, LibreWolf, Lutris, Resources"
 
-# Gaming platforms
-flatpak install -y --system --noninteractive flathub com.valvesoftware.Steam || echo "Failed to install Steam"
-flatpak install -y --system --noninteractive flathub net.lutris.Lutris || echo "Failed to install Lutris"
+#### Fingerprint authentication setup
 
-# System tools
-flatpak install -y --system --noninteractive flathub net.nokyan.Resources || echo "Failed to install Resources"
-flatpak install -y --system --noninteractive flathub io.github.realmazharhussain.GdmSettings || echo "Failed to install GDM Settings"
+echo "Setting up fingerprint authentication..."
 
-echo "Core Flatpak applications installed during build process"
-echo "Additional applications can be installed using: flatpak install flathub <app-id>"
+# Install basic fingerprint support
+dnf5 install -y fprintd || echo "fprintd installation failed, skipping fingerprint setup"
 
-#### Custom libfprint for CS9711 fingerprint sensor support
-
-echo "Installing custom libfprint with CS9711 support..."
-
-# Install basic fingerprint support first
-dnf5 install -y libfprint libfprint-devel
-
-# Create a script for users to compile custom libfprint if needed
-cat > /usr/bin/install-custom-libfprint.sh << 'EOF'
+# Create setup script for users
+cat > /usr/bin/setup-fingerprint-auth.sh << 'EOF'
 #!/bin/bash
-# Script to install custom libfprint with CS9711 support
-echo "Installing custom libfprint with CS9711 fingerprint sensor support..."
+# Complete fingerprint authentication setup
+echo "Setting up fingerprint authentication for Stratos Linux..."
 
-# Install build dependencies
-dnf5 install -y git gcc meson ninja-build pkgconfig glib2-devel libusb1-devel nss-devel pixman-devel cairo-devel gdk-pixbuf2-devel libgudev-devel
+# Install required packages
+sudo dnf5 install -y fprintd pam_fprintd authselect libfprint
 
-# Clone and build custom libfprint
-cd /tmp
-git clone https://github.com/ddlsmurf/libfprint-CS9711.git
-cd libfprint-CS9711
+# Enable fingerprint in authselect
+sudo authselect enable-feature with-fingerprint
+sudo authselect apply-changes
 
-# Build and install
-meson setup builddir --prefix=/usr --libdir=/usr/lib64 --buildtype=release
-meson compile -C builddir
-meson install -C builddir
-
-# Backup original and update
-if [ -f /usr/lib64/libfprint-2.so.2 ]; then
-    mv /usr/lib64/libfprint-2.so.2 /usr/lib64/libfprint-2.so.2.backup
-fi
-
-ldconfig
-cd /
-rm -rf /tmp/libfprint-CS9711
-
-echo "Custom libfprint with CS9711 support installed successfully"
-echo "Restart fprintd service: sudo systemctl restart fprintd"
-EOF
-
-chmod +x /usr/bin/install-custom-libfprint.sh
-
-echo "Standard libfprint installed. Run 'install-custom-libfprint.sh' for CS9711 support"
-
-# Configure fingerprint authentication
-echo "Configuring fingerprint authentication..."
-
-# Install fprintd for fingerprint daemon
-dnf5 install -y fprintd pam_fprintd authselect
-
-# Enable fingerprint feature in authselect
-authselect enable-feature with-fingerprint
-authselect apply-changes
-
-# Configure polkit for fingerprint authentication
-cat > /etc/pam.d/polkit-1 << 'EOF'
+# Configure polkit PAM
+sudo tee /etc/pam.d/polkit-1 >/dev/null <<'POLKIT_EOF'
 #%PAM-1.0
 auth       required     pam_env.so
 auth       sufficient   pam_fprintd.so
@@ -257,10 +212,10 @@ auth       include      system-auth
 account    include      system-auth
 password   include      system-auth
 session    include      system-auth
-EOF
+POLKIT_EOF
 
-# Configure GDM for fingerprint authentication
-cat > /etc/pam.d/gdm-password << 'EOF'
+# Configure GDM PAM
+sudo tee /etc/pam.d/gdm-password >/dev/null <<'GDM_EOF'
 #%PAM-1.0
 auth       required     pam_env.so
 auth       sufficient   pam_fprintd.so
@@ -268,13 +223,42 @@ auth       include      password-auth
 account    include      password-auth
 password   include      password-auth
 session    include      password-auth
+GDM_EOF
+
+# Enable and start fprintd
+sudo systemctl enable fprintd
+sudo systemctl restart fprintd
+
+echo "Fingerprint authentication configured!"
+echo "Enroll fingerprints with: fprintd-enroll"
+
+# Optional: Install custom libfprint for CS9711 support
+read -p "Do you have a CS9711 fingerprint sensor? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Installing custom libfprint with CS9711 support..."
+    sudo dnf5 install -y git gcc meson ninja-build pkgconfig glib2-devel libusb1-devel nss-devel pixman-devel cairo-devel gdk-pixbuf2-devel libgudev-devel
+
+    cd /tmp
+    git clone https://github.com/ddlsmurf/libfprint-CS9711.git
+    cd libfprint-CS9711
+
+    meson setup builddir --prefix=/usr --libdir=/usr/lib64 --buildtype=release
+    meson compile -C builddir
+    sudo meson install -C builddir
+
+    sudo ldconfig
+    cd /
+    rm -rf /tmp/libfprint-CS9711
+
+    sudo systemctl restart fprintd
+    echo "CS9711 support installed! You can now enroll your fingerprint."
+fi
 EOF
 
-# Enable fprintd service
-systemctl enable fprintd
+chmod +x /usr/bin/setup-fingerprint-auth.sh
 
-echo "Fingerprint authentication configured"
-echo "Users can enroll fingerprints with: fprintd-enroll"
+echo "Fingerprint setup available. Run 'setup-fingerprint-auth.sh' to configure."
 
 # Enable additional repositories
 
