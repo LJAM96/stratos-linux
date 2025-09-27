@@ -67,16 +67,34 @@ if [ -z "$EXTENSION_ID" ]; then
     exit 1
 fi
 
-# Get GNOME Shell version
-GNOME_VERSION=$(gnome-shell --version | cut -d' ' -f3 | cut -d'.' -f1,2)
+# Get GNOME Shell version - fallback to 46 if detection fails
+GNOME_VERSION=$(gnome-shell --version 2>/dev/null | cut -d' ' -f3 | cut -d'.' -f1,2 || echo "46")
 
-# Download extension info
-EXTENSION_INFO=$(curl -s "https://extensions.gnome.org/extension-info/?pk=${EXTENSION_ID}")
-DOWNLOAD_URL=$(echo $EXTENSION_INFO | python3 -c "import sys, json; data=json.load(sys.stdin); print('https://extensions.gnome.org' + data['download_url'])")
+# Download extension info with error handling
+EXTENSION_INFO=$(curl -s "https://extensions.gnome.org/extension-info/?pk=${EXTENSION_ID}&shell_version=${GNOME_VERSION}")
 
-if [ "$DOWNLOAD_URL" = "https://extensions.gnome.org" ]; then
-    echo "Failed to get download URL for extension $EXTENSION_ID"
+# Check if we got valid JSON
+if ! echo "$EXTENSION_INFO" | python3 -c "import sys, json; json.load(sys.stdin)" 2>/dev/null; then
+    echo "Failed to get valid extension info for extension $EXTENSION_ID"
     exit 1
+fi
+
+# Parse download URL with better error handling
+DOWNLOAD_URL=$(echo "$EXTENSION_INFO" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    if 'download_url' in data:
+        print('https://extensions.gnome.org' + data['download_url'])
+    else:
+        print('NO_URL')
+except:
+    print('NO_URL')
+")
+
+if [ "$DOWNLOAD_URL" = "NO_URL" ] || [ "$DOWNLOAD_URL" = "https://extensions.gnome.org" ]; then
+    echo "Failed to get download URL for extension $EXTENSION_ID - skipping"
+    exit 0
 fi
 
 # Create extensions directory
@@ -84,16 +102,22 @@ mkdir -p /usr/share/gnome-shell/extensions
 
 # Download and install extension
 TEMP_FILE=$(mktemp)
-curl -s -o "$TEMP_FILE" "$DOWNLOAD_URL"
+if curl -s -o "$TEMP_FILE" "$DOWNLOAD_URL"; then
+    # Extract extension UUID from the zip
+    EXTENSION_UUID=$(unzip -qql "$TEMP_FILE" 2>/dev/null | head -n1 | tr -s ' ' | cut -d' ' -f5- | cut -d'/' -f1)
 
-# Extract extension UUID from the zip
-EXTENSION_UUID=$(unzip -qql "$TEMP_FILE" | head -n1 | tr -s ' ' | cut -d' ' -f5- | cut -d'/' -f1)
+    if [ -n "$EXTENSION_UUID" ]; then
+        # Extract extension to system directory
+        unzip -q "$TEMP_FILE" -d "/usr/share/gnome-shell/extensions/" 2>/dev/null
+        echo "Installed extension: $EXTENSION_UUID"
+    else
+        echo "Failed to extract extension $EXTENSION_ID"
+    fi
+else
+    echo "Failed to download extension $EXTENSION_ID"
+fi
 
-# Extract extension to system directory
-unzip -q "$TEMP_FILE" -d "/usr/share/gnome-shell/extensions/"
-
-rm "$TEMP_FILE"
-echo "Installed extension: $EXTENSION_UUID"
+rm -f "$TEMP_FILE"
 EOF
 
 chmod +x /usr/bin/install-gnome-extension.sh
@@ -234,8 +258,8 @@ echo "Users can enroll fingerprints with: fprintd-enroll"
 # Install custom libfprint with CS9711 support
 echo "Installing custom libfprint with CS9711 support..."
 
-# Install build dependencies
-dnf5 install -y git gcc meson ninja-build pkgconfig glib2-devel libusb1-devel nss-devel pixman-devel cairo-devel gdk-pixbuf2-devel libgudev-devel || echo "Build dependencies installation failed"
+# Install build dependencies including C++ compiler
+dnf5 install -y git gcc gcc-c++ meson ninja-build pkgconfig glib2-devel libusb1-devel nss-devel pixman-devel cairo-devel gdk-pixbuf2-devel libgudev-devel || echo "Build dependencies installation failed"
 
 # Clone and build custom libfprint
 cd /tmp
@@ -337,7 +361,7 @@ mkdir -p /usr/share/pixmaps
 mkdir -p /usr/share/stratos-linux
 
 # Install required packages for boot splash customization
-dnf5 install -y plymouth plymouth-themes
+dnf5 install -y plymouth
 
 # Create custom Plymouth theme directory
 mkdir -p /usr/share/plymouth/themes/stratos
