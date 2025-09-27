@@ -176,14 +176,19 @@ dnf5 install -y flatpak
 # Add Flathub repository
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-echo "Installing essential Flatpak applications..."
+echo "Configuring Flatpak applications..."
+
+# Remove default browsers/email clients that may be pre-installed
+flatpak uninstall -y --system org.mozilla.firefox || echo "Firefox not installed or removal failed"
+flatpak uninstall -y --system org.mozilla.Thunderbird || echo "Thunderbird not installed or removal failed"
 
 # Install core applications during build - smaller selection to avoid timeouts
 flatpak install -y --system --noninteractive flathub org.videolan.VLC || echo "VLC installation failed"
 flatpak install -y --system --noninteractive flathub com.valvesoftware.Steam || echo "Steam installation failed"
 flatpak install -y --system --noninteractive flathub com.mattjakeman.ExtensionManager || echo "Extension Manager installation failed"
+flatpak install -y --system --noninteractive flathub io.gitlab.librewolf-community || echo "LibreWolf installation failed"
 
-echo "Core Flatpak applications installed"
+echo "Core Flatpak applications installed - LibreWolf replaces Firefox"
 
 #### Fingerprint authentication setup
 
