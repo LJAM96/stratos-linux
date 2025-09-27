@@ -199,32 +199,44 @@ echo "Additional applications can be installed using: flatpak install flathub <a
 
 echo "Installing custom libfprint with CS9711 support..."
 
-# Install build dependencies for libfprint
+# Install basic fingerprint support first
+dnf5 install -y libfprint libfprint-devel
+
+# Create a script for users to compile custom libfprint if needed
+cat > /usr/bin/install-custom-libfprint.sh << 'EOF'
+#!/bin/bash
+# Script to install custom libfprint with CS9711 support
+echo "Installing custom libfprint with CS9711 fingerprint sensor support..."
+
+# Install build dependencies
 dnf5 install -y git gcc meson ninja-build pkgconfig glib2-devel libusb1-devel nss-devel pixman-devel cairo-devel gdk-pixbuf2-devel libgudev-devel
 
-# Clone the custom libfprint repository with CS9711 support
+# Clone and build custom libfprint
 cd /tmp
 git clone https://github.com/ddlsmurf/libfprint-CS9711.git
 cd libfprint-CS9711
 
-# Build and install the custom libfprint
+# Build and install
 meson setup builddir --prefix=/usr --libdir=/usr/lib64 --buildtype=release
 meson compile -C builddir
 meson install -C builddir
 
-# Create a backup of the original libfprint if it exists and replace it
+# Backup original and update
 if [ -f /usr/lib64/libfprint-2.so.2 ]; then
     mv /usr/lib64/libfprint-2.so.2 /usr/lib64/libfprint-2.so.2.backup
 fi
 
-# Update library cache
 ldconfig
-
-# Clean up build directory
 cd /
 rm -rf /tmp/libfprint-CS9711
 
-echo "Custom libfprint with CS9711 support installed"
+echo "Custom libfprint with CS9711 support installed successfully"
+echo "Restart fprintd service: sudo systemctl restart fprintd"
+EOF
+
+chmod +x /usr/bin/install-custom-libfprint.sh
+
+echo "Standard libfprint installed. Run 'install-custom-libfprint.sh' for CS9711 support"
 
 # Configure fingerprint authentication
 echo "Configuring fingerprint authentication..."
