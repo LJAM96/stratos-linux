@@ -361,7 +361,7 @@ mkdir -p /usr/share/pixmaps
 mkdir -p /usr/share/stratos-linux
 
 # Install required packages for boot splash customization
-dnf5 install -y plymouth
+dnf5 install -y plymouth plymouth-plugin-script
 
 # Create custom Plymouth theme directory
 mkdir -p /usr/share/plymouth/themes/stratos
