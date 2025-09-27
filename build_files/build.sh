@@ -182,13 +182,15 @@ echo "Configuring Flatpak applications..."
 flatpak uninstall -y --system org.mozilla.firefox || echo "Firefox not installed or removal failed"
 flatpak uninstall -y --system org.mozilla.Thunderbird || echo "Thunderbird not installed or removal failed"
 
-# Install core applications during build - smaller selection to avoid timeouts
-flatpak install -y --system --noninteractive flathub org.videolan.VLC || echo "VLC installation failed"
-flatpak install -y --system --noninteractive flathub com.valvesoftware.Steam || echo "Steam installation failed"
+# Remove Steam if it's already included in base image (Bluefin-nvidia likely has it)
+flatpak uninstall -y --system com.valvesoftware.Steam || echo "Steam not pre-installed or removal failed"
+
+# Install core applications during build - minimal selection to avoid timeouts
 flatpak install -y --system --noninteractive flathub com.mattjakeman.ExtensionManager || echo "Extension Manager installation failed"
 flatpak install -y --system --noninteractive flathub io.gitlab.librewolf-community || echo "LibreWolf installation failed"
+flatpak install -y --system --noninteractive flathub page.tesk.Refine || echo "Refine installation failed"
 
-echo "Core Flatpak applications installed - LibreWolf replaces Firefox"
+echo "Core Flatpak applications installed - LibreWolf, Extension Manager, and Refine"
 
 #### Fingerprint authentication setup
 
